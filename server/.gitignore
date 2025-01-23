@@ -12,3 +12,5 @@ yarn-error.log*
 # SQLite database
 *.sqlite3
 *.db
+
+.DS_Store

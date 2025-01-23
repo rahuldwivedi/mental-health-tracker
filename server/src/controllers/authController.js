@@ -1,7 +1,6 @@
 const generateToken = require('../utils/tokenUtils');
 const db = require('../config/db');
 
-
 const authController = {
   registerUser: (req, res) => {
     const { googleId, name, email } = req.body;

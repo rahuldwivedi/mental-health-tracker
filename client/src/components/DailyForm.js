@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import AppBar from '@mui/material/AppBar';
+import api from '../axios';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import Slider from '@mui/material/Slider';
 import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
-import { useNavigate } from 'react-router-dom';
-import { googleLogout } from '@react-oauth/google';
-import AppBar from '@mui/material/AppBar';
+import React, { useState } from 'react';
+import Slider from '@mui/material/Slider';
+import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import api from '../axios';
+import { useNavigate } from 'react-router-dom';
+import { googleLogout } from '@react-oauth/google';
 
 const DailyForm = () => {
 
@@ -22,17 +20,19 @@ const DailyForm = () => {
     { value: 10, label: 'Very Happy' }
   ];
 
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
   const [mood, setMood] = useState(5);
   const [anxiety, setAnxiety] = useState('');
   const [sleep, setSleep] = useState('');
   const [activity, setActivity] = useState('');
   const [social, setSocial] = useState('');
   const [stress, setStress] = useState('');
-  // const [symptoms, setSymptoms] = useState('');
-  const navigate = useNavigate()
   const profile = JSON.parse(localStorage.getItem('userProfile'));
+  const navigate = useNavigate()
+
+  const [errors, setErrors] = useState({
+    anxiety: false,
+    sleep: false
+  });
 
   const logOut = () => {
     googleLogout();
@@ -51,6 +51,18 @@ const DailyForm = () => {
       social,
       stress
     };
+
+    const newErrors = {
+      anxiety: anxiety === '',
+      sleep: sleep === ''
+    };
+    
+    setErrors(newErrors);
+    
+    if (Object.values(newErrors).some(error => error)) {
+      return;
+    }
+
     try {
       const response = await api.post('/log', logData, {
         headers: {
@@ -58,8 +70,6 @@ const DailyForm = () => {
         },
       });
       if (response.data) {
-        setShowAlert(true);
-        setAlertMessage(response.data.message);
         navigate('/');
       } else {
         console.log('Failed to submit log');
@@ -82,11 +92,6 @@ const DailyForm = () => {
           </Toolbar>
         </AppBar>
       <Box sx={{ width: 400, flexDirection: 'column', display: 'flex', marginX: 'auto', marginTop: 5 }}>
-        {showAlert && (
-          <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
-            {alertMessage}
-          </Alert>
-        )}
         <h3>Daily Mental Health Check-in</h3>
         <form noValidate>
           <FormControl sx={{ width: '100%', marginBottom: '10px' }}>
@@ -106,6 +111,8 @@ const DailyForm = () => {
               InputProps={{ inputProps: { min: 1, max: 10 } }}
               fullWidth
               margin="normal"
+              error={errors.anxiety}
+              helperText={errors.anxiety ? 'This field is required' : ''}
               value={anxiety} onChange={(e) => setAnxiety(e.target.value)}
             />
             
@@ -117,6 +124,8 @@ const DailyForm = () => {
               placeholder="Hours of sleep"
               fullWidth
               margin="normal"
+              error={errors.sleep}
+              helperText={errors.sleep ? 'This field is required' : ''}
               value={sleep} onChange={(e) => setSleep(e.target.value)}
             />
             

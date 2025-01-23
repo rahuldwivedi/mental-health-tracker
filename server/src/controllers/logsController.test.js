@@ -1,12 +1,6 @@
 const logController = require('./logsController');
 const LogModel = require('../models/logModel');
-const db = require('../config/db');
 jest.mock('../models/logModel');
-
-afterAll(() => {
-  jest.clearAllMocks();
-  db.close();
-});
 
 describe('LogController', () => {
   let mockRequest;

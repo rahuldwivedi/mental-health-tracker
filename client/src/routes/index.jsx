@@ -9,14 +9,8 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="*" element={<Login />} />
-      <Route
-        path="/daily_logs" element={
-          <PrivateRoute>
-            <DailyForm />
-          </PrivateRoute> } />
-      <Route path="/dashboard" element={<PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>} />
+      <Route path="/daily_logs" element={<PrivateRoute><DailyForm /></PrivateRoute> } />
+      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
     </Routes>
   );
 };
