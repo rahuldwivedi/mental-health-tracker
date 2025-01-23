@@ -1,69 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import 'chart.js/auto';  // Import Chart.js
+import { LineChart } from '@mui/x-charts/LineChart';
+import api from '../axios';
 
 const Dashboard = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    fetch('/api/logs', { credentials: 'include' })  // Include credentials to handle sessions
-      .then(response => response.json())
-      .then(data => {
-        setLogs(data);
-      })
-      .catch(error => console.error('Error fetching logs:', error));
+    fetchUserLogs();
   }, []);
 
-  const logData = logs.map(log => ({
-    mood: log.mood,
-    anxiety: log.anxiety,
-    sleep: log.sleep,
-    physicalActivity: log.activity,
-    social: log.social,
-    stress: log.stress
-  }));
-
+  const fetchUserLogs = async () => {
+    try {
+      const profile = JSON.parse(localStorage.getItem('userProfile'));
+      const response = await api.get(`/logs/${profile.id}`, {
+        headers: {
+          'Authorization': `Bearer ${profile.token}`,
+        },
+        credentials: 'include'
+      });
+      setLogs(response.data);
+    } catch(error) {
+      console.error('Error fetching logs:', error)
+    }
+  };
+  const xLabels = logs.map((_, index) => `Day ${index + 1}`);
+  
   const chartData = {
-    labels: logs.map((_, index) => `Day ${index + 1}`),
-    datasets: [
-      {
-        label: 'Mood',
-        data: logData.map(data => data.mood),
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Anxiety',
-        data: logData.map(data => data.anxiety),
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Sleep',
-        data: logData.map(data => data.sleep),
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        borderWidth: 1,
-      }
-    ],
+    mood: logs.map(log => log.mood),
+    anxiety: logs.map(log => log.anxiety),
+    sleep: logs.map(log => log.sleep),
   };
 
   return (
     <div>
-      <h1>Dashboard</h1>
-
-      <Line data={chartData} />
-
-      <ul>
-        {logs.map((log, index) => (
-          <li key={index}>
-            Mood: {log.mood}, Anxiety: {log.anxiety}, Sleep: {log.sleep} hours,
-            Activity: {log.activity}, Social: {log.social}, Stress: {log.stress}
-          </li>
-        ))}
-      </ul>
+      <div style={{ width: '100%', height: 400 }}>
+        <LineChart
+          series={[
+            {
+              data: chartData.mood,
+              label: 'Mood',
+              color: 'rgba(255, 99, 132, 1)',
+            },
+            {
+              data: chartData.anxiety,
+              label: 'Anxiety',
+              color: 'rgba(54, 162, 235, 1)',
+            },
+            {
+              data: chartData.sleep,
+              label: 'Sleep',
+              color: 'rgba(255, 206, 86, 1)',
+            },
+          ]}
+          xAxis={[{ data: xLabels, scaleType: 'point' }]}
+          height={300}
+        />
+      </div>
     </div>
   );
 };

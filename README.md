@@ -1,1 +1,1 @@
-# Mental Health Progress Tracker
+# Mental Health Tracker
